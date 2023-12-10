@@ -37,13 +37,13 @@ GLuint CreateShader(GLint type, const char* path)
         const char* ext = strrchr(path, '.');
         switch (type)
         {
-            case GL_VERTEX_SHADER:
-                assert(strcmp(ext, ".vert") == 0);
-                break;
+        case GL_VERTEX_SHADER:
+            assert(strcmp(ext, ".vert") == 0);
+            break;
 
-            case GL_FRAGMENT_SHADER:
-                assert(strcmp(ext, ".frag") == 0);
-                break;
+        case GL_FRAGMENT_SHADER:
+            assert(strcmp(ext, ".frag") == 0);
+            break;
         default:
             assert(false, "Invalid shader type");
             break;
@@ -95,7 +95,7 @@ GLuint CreateProgram(GLuint vs, GLuint fs)
     return shaderProgram;
 }
 
-
+GLint iResolutionLoc, iTimeLoc;
 
 int main()
 {
@@ -131,12 +131,62 @@ int main()
     GLuint fsDefault = CreateShader(GL_FRAGMENT_SHADER, "./assets/shaders/Default.frag");
     GLuint shaderProgram = CreateProgram(vsDefault, fsDefault);
 
+    iResolutionLoc = glGetUniformLocation(shaderProgram, "iResolution");
+    iTimeLoc = glGetUniformLocation(shaderProgram, "iTime");
+
+    //  vertices for full-screen quad
+    float quadVertices[] = {
+        // positions    // texCoords
+        -1.0f,  1.0f,   0.0f, 1.0f,
+        -1.0f, -1.0f,   0.0f, 0.0f,
+         1.0f, -1.0f,   1.0f, 0.0f,
+
+        -1.0f,  1.0f,   0.0f, 1.0f,
+         1.0f, -1.0f,   1.0f, 0.0f,
+         1.0f,  1.0f,   1.0f, 1.0f
+    };
+
+    // VAO and VBO
+    GLuint VAO, VBO;
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    // Texture coordinate attribute
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    // Unbind the VBO and VAO
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glUseProgram(shaderProgram);
     while (!glfwWindowShouldClose(window))
     {
-        glClear(GL_COLOR_BUFFER_BIT);
+        // Update the iTime uniform with the current time
+        float currentTime = static_cast<float>(glfwGetTime());
+
+        // Bind shader program and update uniforms
+        glUseProgram(shaderProgram);
+        glUniform1f(iTimeLoc, currentTime);
+        glUniform3f(iResolutionLoc, static_cast<float>(SCR_WIDTH), static_cast<float>(SCR_HEIGHT), 0.0f);
+
+        // Clear the screen
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Bind the VAO and draw the quad
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0); // Unbind VAO
+
+
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------
@@ -171,5 +221,13 @@ void OnResize(GLFWwindow* window, int width, int height)
 {
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
+
+    // Update the viewport
     glViewport(0, 0, width, height);
+
+    // Update the iResolution uniform
+    if (iResolutionLoc >= 0) // If the uniform location is valid
+    {
+        glUniform3f(iResolutionLoc, static_cast<float>(width), static_cast<float>(height), 0.0f);
+    }
 }
