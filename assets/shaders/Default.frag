@@ -77,9 +77,10 @@ float sdCloud(in vec2 p, in vec2 a1, in vec2 b1, in vec2 a2, in vec2 b2, float w
     return min(uniVal1, uniVal2);
 }
 
+
 void main()
 {
-    vec2 uv = (gl_FragCoord.xy * 2.0 - iResolution.xy) / iResolution.y;
+   vec2 uv = (gl_FragCoord.xy * 2.0 - iResolution.xy) / iResolution.y;
     float battery = 1.0;
     //if (iMouse.x > 1.0 && iMouse.y > 1.0) battery = iMouse.y / iResolution.y;
     //else battery = 0.8;
@@ -88,13 +89,13 @@ void main()
     {
         // Grid
         float fog = smoothstep(0.1, -0.02, abs(uv.y + 0.2));
-        vec3 col = vec3(0.0, 0.1, 0.2);
+        vec3 col = vec3(0.0, 0.0, 0.0);
         if (uv.y < -0.2)
         {
             uv.y = 3.0 / (abs(uv.y + 0.2) + 0.05);
             uv.x *= uv.y * 1.0;
             float gridVal = grid(uv, battery);
-            col = mix(col, vec3(1.0, 0.5, 1.0), gridVal);
+            col = mix(col, vec3(1.0, 0.0, 0.0), gridVal);
         }
         else
         {
@@ -107,10 +108,10 @@ void main()
             // Sun
             sunUV += vec2(0.75, 0.2);
             //uv.y -= 1.1 - 0.51;
-            col = vec3(1.0, 0.2, 1.0);
+            col = vec3(1.0, 0.0, 0.0);
             float sunVal = sun(sunUV, battery);
             
-            col = mix(col, vec3(1.0, 0.4, 0.1), sunUV.y * 2.0 + 0.2);
+            col = mix(col, vec3(1.0, 0.2, 0.1), sunUV.y * 2.0 + 0.2);
             col = mix(vec3(0.0, 0.0, 0.0), col, sunVal);
             
             // fuji
@@ -119,16 +120,16 @@ void main()
             float wave_width = smoothstep(0.0,0.01,(waveVal));
             
             // fuji color
-            col = mix( col, mix(vec3(0.0, 0.0, 0.25), vec3(1.0, 0.0, 0.5), fujiD), step(fujiVal, 0.0));
+            col = mix( col, mix(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), fujiD), step(fujiVal, 0.0));
             // fuji top snow
             col = mix( col, vec3(1.0, 0.5, 1.0), wave_width * step(fujiVal, 0.0));
             // fuji outline
-            col = mix( col, vec3(1.0, 0.5, 1.0), 1.0-smoothstep(0.0,0.01,abs(fujiVal)) );
+            col = mix( col, vec3(1.0, 0.0, 0.0), 1.0-smoothstep(0.0,0.01,abs(fujiVal)) );
             //col = mix( col, vec3(1.0, 1.0, 1.0), 1.0-smoothstep(0.03,0.04,abs(fujiVal)) );
             //col = vec3(1.0, 1.0, 1.0) *(1.0-smoothstep(0.03,0.04,abs(fujiVal)));
             
             // horizon color
-            col += mix( col, mix(vec3(1.0, 0.12, 0.8), vec3(0.0, 0.0, 0.2), clamp(uv.y * 3.5 + 3.0, 0.0, 1.0)), step(0.0, fujiVal) );
+            col += mix( col, mix(vec3(1.0, 0.0, 0.0), vec3(0.0, 0.0, 0.0), clamp(uv.y * 3.5 + 3.0, 0.0, 1.0)), step(0.0, fujiVal) );
             
             // cloud
             vec2 cloudUV = uv;
@@ -150,8 +151,8 @@ void main()
             float cloudVal = min(cloudVal1, cloudVal2);
             
             //col = mix(col, vec3(1.0,1.0,0.0), smoothstep(0.0751, 0.075, cloudVal));
-            col = mix(col, vec3(0.0, 0.0, 0.2), 1.0 - smoothstep(0.075 - 0.0001, 0.075, cloudVal));
-            col += vec3(1.0, 1.0, 1.0)*(1.0 - smoothstep(0.0,0.01,abs(cloudVal - 0.075)));
+            col = mix(col, vec3(0.0, 0.0, 0.0), 1.0 - smoothstep(0.075 - 0.0001, 0.075, cloudVal));
+            col += vec3(1.0, 0.0, 0.0)*(1.0 - smoothstep(0.0,0.01,abs(cloudVal - 0.075)));
         }
 
         col += fog * fog * fog;
@@ -159,9 +160,6 @@ void main()
 
         FragColor = vec4(col,1.0);
     }
-    //else fragColor = vec4(0.0);
-
-    
 }
 
 
