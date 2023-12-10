@@ -10,6 +10,8 @@
 #include <vector>
 #include <cmath>
 
+// https://www.shadertoy.com/view/Wt33Wf //
+
 void OnResize(GLFWwindow* window, int width, int height);
 void OnKey(GLFWwindow* window, int key, int scancode, int action, int mods);
 
